@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Web;
@@ -14,7 +15,7 @@ public class TrackHandler : IHttpHandler
 	public void ProcessRequest (HttpContext context)
 	{
 		var client = new HttpClient ();
-		var redirectUrl = new Uri (new Uri (BaseUrl), context.Request.Path);
+		var redirectUrl = new Uri (new Uri (BaseUrl), context.Request.Url.PathAndQuery);
 
 		var content = @"v=1
 &tid=" + TrackingID + @"
@@ -22,7 +23,7 @@ public class TrackHandler : IHttpHandler
 &t=pageview
 &dh=" + redirectUrl.Host + @"
 &dp=" + context.Request.Path + @"
-&dt=" + context.Request.QueryString["t"] ?? context.Request.QueryString["title"] ?? context.Request.Path;
+&dt=" + context.Request.QueryString["t"] ?? context.Request.QueryString["title"] ?? Path.GetFileName(context.Request.Url.AbsolutePath);
 
 		var clientIp = IPAddress.Parse (context.Request.UserHostAddress);
 		if (!IPAddress.IsLoopback (clientIp))
