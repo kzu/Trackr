@@ -36,3 +36,15 @@ parameters, passing on the client IP and user agent, and ultimately redirect to 
 > Note: it only does GET redirects.
 
 
+### Xamarin Insights Support
+
+[Xamarin Insights](http://xamarin.com/insights) is a new analytics offering by [Xamarin](http://www.xamarin.com) that provides many of the benefits 
+of Google Analytics, with a far friendlier and simpler UI.
+
+If you want to report to Xamarin Insights, just add the following app settings to your deployement: 
+* Insights.ApiKey: the API key for your Insights app 
+* Insights.AppName: the name of the application as created in Insights.
+
+From this point on, every URL request (or also via the app settings) can specify the Application Name, ID, Version 
+and Installer ID as documented in [App Tracking](https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#apptracking) 
+and that information will be used to identify the client.

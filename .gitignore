@@ -1,5 +1,6 @@
 /bin
 /obj
 /packages
+/*.sln.ide
 *.user
 *.suo
