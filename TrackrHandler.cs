@@ -133,6 +133,10 @@ public class TrackrHandler : IHttpHandler
 			parameters["ua"] = context.Request.UserAgent;
 		if (!parameters.AllKeys.Contains("uip"))
 			parameters["uip"] = context.Request.UserHostAddress;
+		
+		// Provide also user language
+		if (!parameters.AllKeys.Contains("ul") && context.Request.UserLanguages.Length != 0)
+			parameters["ul"] = context.Request.UserLanguages[0];
 
 		// NOTE: without the sc=start, tracking doesn't work, but we do let the client send sc=end.
 		if (!parameters.AllKeys.Contains ("sc"))
