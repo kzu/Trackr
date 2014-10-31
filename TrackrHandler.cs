@@ -64,13 +64,24 @@ public class TrackrHandler : IHttpHandler
 		var content = string.Join (Environment.NewLine + "&",
 			parameters.AllKeys.Select (key => key + "=" + HttpUtility.UrlEncode (parameters[key])));
 
-		Trace.WriteLine (content);
+		// Generate query string from parameters
+		var queryString = string.Join ("&", parameters.AllKeys
+			.Select (key => key + "=" + HttpUtility.UrlEncode (parameters[key])));
 
-		var client = new HttpClient ();
-		var response = client.PostAsync ("http://www.google-analytics.com/collect", new StringContent (content)).Result;
-		if (!response.IsSuccessStatusCode && insightsEnabled) {
-			Insights.Report (new HttpResponseException (response.Version, response.StatusCode, response.ReasonPhrase));
+		var url = "http://www.google-analytics.com/collect?" + queryString;
+
+		Trace.WriteLine("Google Analytics: " + url);
+
+		using (var client = new WebClient()) {
+			client.DownloadData ("http://www.google-analytics.com/collect?" + queryString);
 		}
+
+		//var client = new HttpClient ();
+		//var response = client.PostAsync ("http://www.google-analytics.com/collect", new StringContent (content)).Result;
+		//if (!response.IsSuccessStatusCode && insightsEnabled) {
+		//	Trace.WriteLine ("Failed to send analytics request: " + response.StatusCode + " " + response.ReasonPhrase);
+		//	Insights.Report (new HttpResponseException (response.Version, response.StatusCode, response.ReasonPhrase));
+		//}
 	}
 
 	private static void TrackInsights (HttpContext context, NameValueCollection parameters)
@@ -116,6 +127,17 @@ public class TrackrHandler : IHttpHandler
 			parameters[key] = context.Request.QueryString[key];
 		}
 
+		// Always use the client's host address and user agent rather than the server's, unless overriden
+		// by url
+		if (!parameters.AllKeys.Contains("ua"))
+			parameters["ua"] = context.Request.UserAgent;
+		if (!parameters.AllKeys.Contains("uip"))
+			parameters["uip"] = context.Request.UserHostAddress;
+
+		// NOTE: without the sc=start, tracking doesn't work, but we do let the client send sc=end.
+		if (!parameters.AllKeys.Contains ("sc"))
+			parameters.Add ("sc", "start");
+
 		// See https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#cid
 		if (string.IsNullOrEmpty (parameters["cid"])) {
 			var cookie = context.Request.Cookies.Get ("cid");
@@ -129,6 +151,25 @@ public class TrackrHandler : IHttpHandler
 		parameters["dp"] = context.Request.Path;
 
 		return parameters;
+	}
+
+	private void TestRequest()
+	{
+		ConfigurationManager.AppSettings["v"] = "1";
+		ConfigurationManager.AppSettings["tid"] = "UA-56247715-1";
+		ConfigurationManager.AppSettings["t"] = "pageview";
+		ConfigurationManager.AppSettings["dh"] = "gallery.mobileessentials.org";
+		ConfigurationManager.AppSettings["sc"] = "start";
+
+		var output = new StringWriter();
+		var context = new HttpContext(
+			new HttpRequest("CheckForUpdates", 
+				"http://vsmobileessentials.azurewebsites.net/CheckForUpdates",
+				"ua=Visual%20Studio%20Professional+14&cid=76949b38-8909-49d9-9d13-a576117db99f"),
+			new HttpResponse(output));
+		
+		ProcessRequest (context, false);
+		Console.WriteLine (output.ToString());
 	}
 
 	private class HttpResponseException : Exception
