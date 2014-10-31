@@ -129,13 +129,13 @@ public class TrackrHandler : IHttpHandler
 
 		// Always use the client's host address and user agent rather than the server's, unless overriden
 		// by url
-		if (!parameters.AllKeys.Contains("ua"))
+		if (!parameters.AllKeys.Contains("ua") && !string.IsNullOrEmpty(context.Request.UserAgent))
 			parameters["ua"] = context.Request.UserAgent;
 		if (!parameters.AllKeys.Contains("uip"))
 			parameters["uip"] = context.Request.UserHostAddress;
 		
 		// Provide also user language
-		if (!parameters.AllKeys.Contains("ul") && context.Request.UserLanguages.Length != 0)
+		if (!parameters.AllKeys.Contains("ul") && context.Request.UserLanguages != null && context.Request.UserLanguages.Length != 0)
 			parameters["ul"] = context.Request.UserLanguages[0];
 
 		// NOTE: without the sc=start, tracking doesn't work, but we do let the client send sc=end.
@@ -155,25 +155,6 @@ public class TrackrHandler : IHttpHandler
 		parameters["dp"] = context.Request.Path;
 
 		return parameters;
-	}
-
-	private void TestRequest()
-	{
-		ConfigurationManager.AppSettings["v"] = "1";
-		ConfigurationManager.AppSettings["tid"] = "UA-56247715-1";
-		ConfigurationManager.AppSettings["t"] = "pageview";
-		ConfigurationManager.AppSettings["dh"] = "gallery.mobileessentials.org";
-		ConfigurationManager.AppSettings["sc"] = "start";
-
-		var output = new StringWriter();
-		var context = new HttpContext(
-			new HttpRequest("CheckForUpdates", 
-				"http://vsmobileessentials.azurewebsites.net/CheckForUpdates",
-				"ua=Visual%20Studio%20Professional+14&cid=76949b38-8909-49d9-9d13-a576117db99f"),
-			new HttpResponse(output));
-		
-		ProcessRequest (context, false);
-		Console.WriteLine (output.ToString());
 	}
 
 	private class HttpResponseException : Exception
