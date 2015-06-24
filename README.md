@@ -41,7 +41,7 @@ parameters, passing on the client IP and user agent, and ultimately redirect to 
 [Xamarin Insights](http://xamarin.com/insights) is a new analytics offering by [Xamarin](http://www.xamarin.com) that provides many of the benefits 
 of Google Analytics, with a far friendlier and simpler UI.
 
-If you want to report to Xamarin Insights, just add the following app settings to your deployement: 
+If you want to report to Xamarin Insights, just add the following app settings to your deployment: 
 * Insights.ApiKey: the API key for your Insights app 
 * Insights.AppName: the name of the application as created in Insights.
 
