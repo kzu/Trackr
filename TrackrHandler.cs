@@ -60,10 +60,6 @@ public class TrackrHandler : IHttpHandler
 
 	private static void TrackAnalytics (NameValueCollection parameters)
 	{
-		// Generate the body from parameters
-		var content = string.Join (Environment.NewLine + "&",
-			parameters.AllKeys.Select (key => key + "=" + HttpUtility.UrlEncode (parameters[key])));
-
 		// Generate query string from parameters
 		var queryString = string.Join ("&", parameters.AllKeys
 			.Select (key => key + "=" + HttpUtility.UrlEncode (parameters[key])));
@@ -75,13 +71,6 @@ public class TrackrHandler : IHttpHandler
 		using (var client = new WebClient()) {
 			client.DownloadData ("http://www.google-analytics.com/collect?" + queryString);
 		}
-
-		//var client = new HttpClient ();
-		//var response = client.PostAsync ("http://www.google-analytics.com/collect", new StringContent (content)).Result;
-		//if (!response.IsSuccessStatusCode && insightsEnabled) {
-		//	Trace.WriteLine ("Failed to send analytics request: " + response.StatusCode + " " + response.ReasonPhrase);
-		//	Insights.Report (new HttpResponseException (response.Version, response.StatusCode, response.ReasonPhrase));
-		//}
 	}
 
 	private static void TrackInsights (HttpContext context, NameValueCollection parameters)
@@ -155,24 +144,5 @@ public class TrackrHandler : IHttpHandler
 		parameters["dp"] = context.Request.Path;
 
 		return parameters;
-	}
-
-	private class HttpResponseException : Exception
-	{
-		public HttpResponseException (Version version, HttpStatusCode status, string reasonPhrase)
-		{
-			this.Version = version;
-			this.Status = status;
-			this.ReasonPhrase = reasonPhrase;
-		}
-
-		public Version Version { get; private set; }
-		public HttpStatusCode Status { get; private set; }
-		public string ReasonPhrase { get; private set; }
-
-		public override string ToString ()
-		{
-			return "HTTP/" + Version + " " + ((int)Status).ToString () + " " + Status + Environment.NewLine + ReasonPhrase;
-		}
 	}
 }
